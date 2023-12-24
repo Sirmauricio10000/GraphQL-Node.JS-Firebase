@@ -2,10 +2,16 @@ type User {
   id: ID!
   email: String!
   name: String!
-  telefono: String!
+  saldo: String!
+  ti: String!
 }
 
 type Query {
   users: [User!]!
   user(id: ID!): User
+}
+
+type Mutation {
+  updateUserBalance(id: ID!, newBalance: String!): User!
+  createUser(id: String!, email: String!, name: String!, ti: String!): User!
 }

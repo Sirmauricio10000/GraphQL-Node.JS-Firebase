@@ -47,6 +47,62 @@ const resolvers = {
       }
     },
   },
+  Mutation: {
+    updateUserBalance: async (parent, args) => {
+      try {
+        const userId = args.id.toString(); // Convertir a cadena
+        const newBalance = args.newBalance.toString(); // Convertir a cadena
+        const userRef = admin.database().ref(`usuarios/${userId}`);
+
+        // Actualizar el saldo del usuario en la base de datos de Firebase
+        await userRef.update({ saldo: newBalance });
+
+        // Obtener el usuario actualizado y devolverlo
+        const snapshot = await userRef.once('value');
+        const userData = snapshot.val();
+
+        if (!userData) {
+          throw new Error(`Usuario con ID ${userId} no encontrado`);
+        }
+
+        return {
+          id: userId,
+          ...userData,
+        };
+      } catch (error) {
+        console.error('Error al actualizar saldo del usuario en Firebase:', error);
+        throw error;
+      }
+    },
+    createUser: async (parent, args) => {
+      try {
+        const { id, email, name, ti } = args;
+        const newBalance = "0"; // Saldo preestablecido a 0
+
+        // Crear el nuevo usuario en la base de datos de Firebase
+        const newUserRef = admin.database().ref(`usuarios/${id}`);
+        await newUserRef.set({
+          id,
+          email,
+          name,
+          ti,
+          saldo: newBalance,
+        });
+
+        // Obtener el usuario recién creado y devolverlo
+        const snapshot = await newUserRef.once('value');
+        const userData = snapshot.val();
+
+        return {
+          id,
+          ...userData,
+        };
+      } catch (error) {
+        console.error('Error al crear un nuevo usuario en Firebase:', error);
+        throw error;
+      }
+    },
+  },
 };
 
 export default resolvers;
