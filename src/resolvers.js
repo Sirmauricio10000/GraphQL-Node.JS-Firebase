@@ -3,6 +3,34 @@ import admin from 'firebase-admin';
 
 const resolvers = {
   Query: {
+    login: async (parent, args) => {
+      try {
+        const { id, pass } = args;
+
+        // Obtener usuario por correo electrónico desde la base de datos
+        const snapshot = await admin.database().ref(`usuarios/${id}`).once('value')
+        .catch((error) => {
+            console.error('Error al obtener usuario desde Firebase:', error);
+            throw error;
+        });
+
+        const userData = snapshot.val();
+
+        if (!userData) {
+          throw new Error(`Usuario con ID ${id} no encontrado`);
+        }
+
+        if (userData.pass != pass){
+          throw new Error(`Contraseña incorrecta`);
+        } 
+
+          return "Login Exitoso";
+
+      } catch (error){
+        console.error('Error al logearse:', error);
+        throw error;
+      }
+    }, 
     users: async () => {
       try {
         // Lógica para obtener todos los usuarios desde Firebase
@@ -76,7 +104,7 @@ const resolvers = {
     },
     createUser: async (parent, args) => {
       try {
-        const { id, email, name, ti } = args;
+        const { id, email, name, ti, pass } = args;
         const newBalance = "0"; // Saldo preestablecido a 0
 
         // Crear el nuevo usuario en la base de datos de Firebase
@@ -86,6 +114,7 @@ const resolvers = {
           email,
           name,
           ti,
+          pass,
           saldo: newBalance,
         });
 
